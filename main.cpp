@@ -4,6 +4,10 @@
 #include <cstring>
 #include <ctime>
 #include <algorithm>
+#include <stack>
+
+const size_t MAX_VALUE   = 1'000'000;
+const size_t XS_CAPACITY = 1'000'000'000;
 
 template <typename T>
 void swap(T &a, T &b)
@@ -72,6 +76,76 @@ void quick_sort(T *xs, size_t xs_size)
         quick_sort(xs, pivot);
         quick_sort(xs + pivot + 1, xs_size - pivot - 1);
     }
+}
+
+const size_t STACK_INIT_CAPACITY = 256;
+
+template <typename T>
+struct Stack
+{
+    T *items;
+    size_t capacity;
+    size_t count;
+
+    void push(T x)
+    {
+        if (items == NULL) {
+            items = new T[STACK_INIT_CAPACITY];
+            capacity = STACK_INIT_CAPACITY;
+        }
+
+        if (count >= capacity) {
+            size_t new_capacity = capacity + (capacity >> 2);
+            T *new_items = new T[new_capacity];
+            for (size_t i = 0; i < capacity; ++i) {
+                new_items[i] = items[i];
+            }
+            delete[] items;
+            items = new_items;
+            capacity = new_capacity;
+        }
+
+        items[count++] = x;
+    }
+
+    T pop()
+    {
+        assert(count > 0);
+        return items[--count];
+    }
+};
+
+template <typename T>
+struct Slice
+{
+    T *base;
+    size_t size;
+};
+
+constexpr int bit_width(int n)
+{
+    int res = 0;
+    while (n > 0) {
+        n /= 2;
+        res += 1;
+    }
+    return res;
+}
+
+template <typename T>
+void non_recursive_quick_sort(T *xs, const size_t xs_size)
+{
+    Stack<Slice<T>> stack = {};
+    stack.push(Slice<T> {xs, xs_size});
+    while (stack.count > 0) {
+        auto slice = stack.pop();
+        if (slice.size > 1) {
+            size_t pivot = make_random_pivot(slice.base, slice.size);
+            stack.push(Slice<T> {slice.base, pivot});
+            stack.push(Slice<T> {slice.base + pivot + 1, slice.size - pivot - 1});
+        }
+    }
+    delete[] stack.items;
 }
 
 template <typename T>
@@ -147,8 +221,6 @@ void build_hist(int *xs, size_t xs_size,
     }
 }
 
-const size_t MAX_VALUE   = 1'000'000;
-const size_t XS_CAPACITY = 1'000'000'000;
 int xs[XS_CAPACITY];
 int hist1[MAX_VALUE];
 int hist2[MAX_VALUE];
@@ -198,6 +270,7 @@ Sort sorts[] = {
     {std_sort<int>, "std_sort"},
     {adaptive_quick_sort<int>, "adaptive_quick_sort"},
     {quick_sort<int>, "quick_sort"},
+    {non_recursive_quick_sort<int>, "non_recursive_quick_sort"},
     {bubble_sort<int>, "bubble_sort"},
 };
 const size_t sorts_count = sizeof(sorts) / sizeof(sorts[0]);
@@ -213,7 +286,7 @@ int main()
 {
     for (size_t i = 0; i < sorts_count; ++i) {
         for (size_t j = 0; j < generators_count; ++j) {
-            test_bench(sorts[i], generators[j], 6);
+            test_bench(sorts[i], generators[j], 8);
         }
     }
 

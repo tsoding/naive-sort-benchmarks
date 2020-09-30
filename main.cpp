@@ -30,6 +30,16 @@ void bubble_sort(T *xs, size_t xs_size)
 }
 
 template <typename T>
+void insertion_sort(T *xs, size_t xs_size)
+{
+    for (size_t i = 1; i < xs_size; ++i) {
+        for (size_t j = i; j > 0 && xs[j] < xs[j - 1]; --j) {
+            swap(xs[j], xs[j - 1]);
+        }
+    }
+}
+
+template <typename T>
 size_t make_first_pivot(T *xs, size_t xs_size)
 {
     size_t pivot = 0;
@@ -149,16 +159,29 @@ void non_recursive_quick_sort(T *xs, const size_t xs_size)
 }
 
 template <typename T>
-void adaptive_quick_sort(T *xs, size_t xs_size)
+void adaptive_quick_sort_with_bubble_sort(T *xs, size_t xs_size)
 {
-    if (xs_size > 15) {
+    if (xs_size > 31) {
         size_t pivot = make_random_pivot(xs, xs_size);
-        adaptive_quick_sort(xs, pivot);
-        adaptive_quick_sort(xs + pivot + 1, xs_size - pivot - 1);
+        adaptive_quick_sort_with_bubble_sort(xs, pivot);
+        adaptive_quick_sort_with_bubble_sort(xs + pivot + 1, xs_size - pivot - 1);
     } else {
         bubble_sort(xs, xs_size);
     }
 }
+
+template <typename T>
+void adaptive_quick_sort_with_insertion_sort(T *xs, size_t xs_size)
+{
+    if (xs_size > 31) {
+        size_t pivot = make_random_pivot(xs, xs_size);
+        adaptive_quick_sort_with_insertion_sort(xs, pivot);
+        adaptive_quick_sort_with_insertion_sort(xs + pivot + 1, xs_size - pivot - 1);
+    } else {
+        insertion_sort(xs, xs_size);
+    }
+}
+
 
 template <typename T>
 void std_sort(T *xs, size_t xs_size)
@@ -266,14 +289,20 @@ void test_bench(Sort sort, Generator generator, size_t n)
     }
 }
 
-Sort sorts[] = {
+Sort nlogn_sorts[] = {
     {std_sort<int>, "std_sort"},
-    {adaptive_quick_sort<int>, "adaptive_quick_sort"},
+    {adaptive_quick_sort_with_insertion_sort<int>, "adaptive_quick_sort_with_insertion_sort"},
+    {adaptive_quick_sort_with_bubble_sort<int>, "adaptive_quick_sort_with_bubble_sort"},
     {quick_sort<int>, "quick_sort"},
     {non_recursive_quick_sort<int>, "non_recursive_quick_sort"},
-    {bubble_sort<int>, "bubble_sort"},
 };
-const size_t sorts_count = sizeof(sorts) / sizeof(sorts[0]);
+const size_t nlogn_sorts_count = sizeof(nlogn_sorts) / sizeof(nlogn_sorts[0]);
+
+Sort squaredn_sorts[] = {
+    {bubble_sort<int>, "bubble_sort"},
+    {insertion_sort<int>, "insertion_sort"},
+};
+const size_t squaredn_sorts_count = sizeof(squaredn_sorts) / sizeof(squaredn_sorts[0]);
 
 Generator generators[] = {
     {generate_random_ints, "random_ints"},
@@ -284,11 +313,21 @@ const size_t generators_count = sizeof(generators) / sizeof(generators[0]);
 
 int main()
 {
-    for (size_t i = 0; i < sorts_count; ++i) {
+    printf("O(N²)\n");
+    for (size_t i = 0; i < squaredn_sorts_count; ++i) {
         for (size_t j = 0; j < generators_count; ++j) {
-            test_bench(sorts[i], generators[j], 8);
+            test_bench(squaredn_sorts[i], generators[j], 5);
         }
     }
+    printf("\n");
+
+    printf("O(NlogN)\n");
+    for (size_t i = 0; i < nlogn_sorts_count; ++i) {
+        for (size_t j = 0; j < generators_count; ++j) {
+            test_bench(nlogn_sorts[i], generators[j], 8);
+        }
+    }
+    printf("\n");
 
     return 0;
 }

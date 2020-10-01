@@ -56,22 +56,24 @@ size_t make_first_pivot(T *xs, size_t xs_size)
 template <typename T>
 size_t make_random_pivot(T *xs, size_t xs_size)
 {
-    size_t pivot = rand() % xs_size;
+    size_t pivot = static_cast<size_t>(rand()) % xs_size;
 
-    for (size_t i = 0; i < xs_size; ++i) {
-        if (i < pivot) {
-            if (xs[i] >= xs[pivot]) {
-                swap(xs[i], xs[pivot - 1]);
-                swap(xs[pivot], xs[pivot - 1]);
-                pivot -= 1;
-                i--;
-            }
-        } else if (i > pivot) {
-            if (xs[i] < xs[pivot]) {
-                swap(xs[i], xs[pivot + 1]);
-                swap(xs[pivot], xs[pivot + 1]);
-                pivot += 1;
-            }
+    size_t i = 0;
+    while (i < xs_size && i < pivot) {
+        if (xs[i] >= xs[pivot]) {
+            swap(xs[i], xs[pivot - 1]);
+            swap(xs[pivot], xs[pivot - 1]);
+            pivot -= 1;
+        } else {
+            i++;
+        }
+    }
+
+    for (; i < xs_size; ++i) {
+        if (xs[i] < xs[pivot]) {
+            swap(xs[i], xs[pivot + 1]);
+            swap(xs[pivot], xs[pivot + 1]);
+            pivot += 1;
         }
     }
 

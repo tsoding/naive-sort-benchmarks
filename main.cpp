@@ -228,7 +228,7 @@ void generate_random_ints(int *xs, size_t xs_size, int max_value)
 
 void generate_sorted_ints(int *xs, size_t xs_size, int max_value)
 {
-    size_t step = (xs_size + max_value - 1) / max_value;
+    size_t step = (xs_size + static_cast<size_t>(max_value) - 1) / static_cast<size_t>(max_value);
     for (size_t i = 0; i < xs_size; ++i) {
         xs[i] = (int) (i / step);
     }
@@ -236,7 +236,7 @@ void generate_sorted_ints(int *xs, size_t xs_size, int max_value)
 
 void generate_reversed_ints(int *xs, size_t xs_size, int max_value)
 {
-    size_t step = (xs_size + max_value - 1) / max_value;
+    size_t step = (xs_size + static_cast<size_t>(max_value) - 1) / static_cast<size_t>(max_value);
     for (size_t i = 0; i < xs_size; ++i) {
         xs[xs_size - i  - 1] = (int) (i / step);
     }

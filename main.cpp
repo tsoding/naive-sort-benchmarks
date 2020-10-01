@@ -190,6 +190,20 @@ void std_sort(T *xs, size_t xs_size)
 }
 
 template <typename T>
+int std_qsort_compare(const void *x, const void *y)
+{
+    if (*static_cast<const T*>(x) < *static_cast<const T*>(y)) return -1;
+    if (*static_cast<const T*>(x) > *static_cast<const T*>(y)) return 1;
+    return 0;
+}
+
+template <typename T>
+void std_qsort(T *xs, size_t xs_size)
+{
+    qsort(xs, xs_size, sizeof(T), std_qsort_compare<T>);
+}
+
+template <typename T>
 bool is_sorted(T *xs, size_t xs_size)
 {
     if (xs_size >= 2) {
@@ -291,6 +305,7 @@ void test_bench(Sort sort, Generator generator, size_t n)
 
 Sort nlogn_sorts[] = {
     {std_sort<int>, "std_sort"},
+    {std_qsort<int>, "std_qsort"},
     {adaptive_quick_sort_with_insertion_sort<int>, "adaptive_quick_sort_with_insertion_sort"},
     {adaptive_quick_sort_with_bubble_sort<int>, "adaptive_quick_sort_with_bubble_sort"},
     {quick_sort<int>, "quick_sort"},
